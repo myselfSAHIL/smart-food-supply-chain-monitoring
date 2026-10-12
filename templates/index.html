@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — FoodChain Trace{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <h1>Smart Food Supply Chain Monitoring</h1>
+  <p>Blockchain-backed traceability, IoT condition monitoring, and consumer-facing verification.</p>
+  <div class="chain-status {{ 'ok' if chain_valid else 'bad' }}">
+    {% if chain_valid %}✔ Blockchain integrity verified{% else %}✘ Blockchain integrity compromised: {{ chain_message }}{% endif %}
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Register New Product Batch</h2>
+    <form method="POST" action="{{ url_for('register') }}">
+      <label>Producer Name</label>
+      <input type="text" name="producer" required placeholder="e.g. Green Valley Farms">
+      <label>Product Name</label>
+      <input type="text" name="product_name" required placeholder="e.g. Organic Tomatoes">
+      <label>Origin</label>
+      <input type="text" name="origin" required placeholder="e.g. Nashik, India">
+      <button type="submit" class="btn-primary">Register on Blockchain</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Recent Alerts</h2>
+    {% if alerts %}
+      <ul class="alert-list">
+      {% for a in alerts %}
+        <li>
+          <strong>{{ a.batch_id }}</strong> — {{ a.violation_type.replace('_', ' ') }}
+          <br><span class="muted small">{{ a.details }}</span>
+        </li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No violations recorded yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Registered Batches ({{ batches|length }})</h2>
+  {% if batches %}
+  <table class="table">
+    <thead><tr><th>Batch ID</th><th>Product</th><th>Producer</th><th>Origin</th><th></th></tr></thead>
+    <tbody>
+    {% for batch_id, info in batches.items() %}
+      <tr>
+        <td><code>{{ batch_id }}</code></td>
+        <td>{{ info.product_name }}</td>
+        <td>{{ info.producer }}</td>
+        <td>{{ info.origin }}</td>
+        <td class="row-actions">
+          <a class="btn-secondary" href="{{ url_for('product_detail', batch_id=batch_id) }}">Manage</a>
+          <a class="btn-secondary" href="{{ url_for('verify', batch_id=batch_id) }}">Consumer View</a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="muted">No products registered yet. Register one above to get started.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

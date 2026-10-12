@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Blockchain Explorer{% endblock %}
+{% block content %}
+
+<h1>Blockchain Explorer</h1>
+<div class="chain-status {{ 'ok' if valid else 'bad' }}">
+  {% if valid %}✔ {{ message }}{% else %}✘ {{ message }}{% endif %}
+</div>
+
+<div class="card immutability-note">
+  <h2>Why this ledger can't be altered</h2>
+  <p class="muted small">
+    The <code>blocks</code> table in <code>blockchain.db</code> is append-only.
+    Two database triggers (<code>blocks_no_update</code>, <code>blocks_no_delete</code>)
+    make <code>UPDATE</code> and <code>DELETE</code> fail at the database engine level —
+    for every caller, not just this website. On top of that, every block's hash is
+    chained to the one before it (SHA-256), so even a direct edit to the database
+    file would break the chain and show up as invalid below.
+  </p>
+  <p class="muted small">
+    Run <code>python attempt_tamper.py</code> from a terminal (with the app stopped)
+    to see the database itself reject an UPDATE and a DELETE attempt.
+  </p>
+</div>
+
+<div class="block-grid">
+  {% for block in chain %}
+  <div class="block-card {{ 'invalid' if not valid and loop.last else '' }}">
+    <div class="block-index">Block #{{ block.index }}</div>
+    <div class="muted small">Nonce: {{ block.nonce }}</div>
+    <div class="muted small">Prev: <code>{{ block.previous_hash[:16] }}…</code></div>
+    <div class="muted small">Hash: <code>{{ block.hash[:16] }}…</code></div>
+    <pre class="block-data small">{{ block.data | tojson(indent=2) }}</pre>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

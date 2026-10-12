@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ batch_id }} — Manage{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('index') }}" class="back-link">&larr; Back to Dashboard</a>
+<h1>{{ batch_id }}</h1>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Add Supply Chain Event</h2>
+    <form method="POST" action="{{ url_for('add_event', batch_id=batch_id) }}">
+      <label>Stage</label>
+      <select name="stage">
+        {% for s in stages %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+      </select>
+      <label>Location</label>
+      <input type="text" name="location" required placeholder="e.g. Mumbai Distribution Center">
+      <label>Handler / Company</label>
+      <input type="text" name="handler" required placeholder="e.g. FastFreight Logistics">
+      <label>Actor Role</label>
+      <select name="actor_role">
+        {% for r in roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn-primary">Record Event</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Submit IoT Sensor Reading</h2>
+    <form method="POST" action="{{ url_for('add_sensor', batch_id=batch_id) }}">
+      <label>Temperature (°C)</label>
+      <input type="number" step="0.1" name="temperature" required placeholder="e.g. 4.5">
+      <label>Humidity (%)</label>
+      <input type="number" step="0.1" name="humidity" required placeholder="e.g. 55">
+      <label>Location</label>
+      <input type="text" name="location" required placeholder="e.g. Refrigerated Truck #12">
+      <button type="submit" class="btn-primary">Submit Reading</button>
+      <p class="muted small">Safe range: 0–8°C, 30–70% humidity. Out-of-range readings auto-trigger an on-chain alert.</p>
+    </form>
+  </section>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Transfer Ownership</h2>
+    <form method="POST" action="{{ url_for('transfer', batch_id=batch_id) }}">
+      <label>New Owner</label>
+      <input type="text" name="new_owner" required placeholder="e.g. FreshMart Retail">
+      <label>Actor Role</label>
+      <select name="actor_role">
+        {% for r in roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn-primary">Transfer</button>
+    </form>
+  </section>
+
+  <section class="card qr-card">
+    <h2>Consumer QR Verification</h2>
+    <img src="data:image/png;base64,{{ qr_b64 }}" alt="QR code linking to the consumer verification page" class="qr-image">
+    <p class="muted small">Scan it, or share the link directly:<br><a href="{{ verify_url }}">{{ verify_url }}</a></p>
+  </section>
+</div>
+
+<section class="card">
+  <h2>On-Chain History ({{ history|length }} blocks)</h2>
+  <ol class="timeline">
+    {% for block in history %}
+    <li class="timeline-item type-{{ block.data.type|lower }}">
+      <div class="timeline-head">
+        <span class="badge">{{ block.data.type.replace('_', ' ') }}</span>
+        <span class="muted small">Block #{{ block.index }}</span>
+      </div>
+      <pre class="block-data">{{ block.data | tojson(indent=2) }}</pre>
+      <div class="muted small">Hash: <code>{{ block.hash[:24] }}…</code></div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+{% endblock %}

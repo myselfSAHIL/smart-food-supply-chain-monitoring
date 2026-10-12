@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Verify {{ batch_id }}{% endblock %}
+{% block content %}
+
+<section class="card verify-card">
+  <h1>Product Provenance Verification</h1>
+  <p class="muted">Batch: <code>{{ batch_id }}</code></p>
+
+  {% if history %}
+    <ol class="timeline">
+      {% for block in history %}
+      <li class="timeline-item type-{{ block.data.type|lower }}">
+        <div class="timeline-head">
+          <span class="badge">{{ block.data.type.replace('_', ' ') }}</span>
+        </div>
+        <ul class="kv-list">
+          {% for k, v in block.data.items() %}
+            {% if k not in ['type', 'batch_id'] %}
+              <li><strong>{{ k.replace('_',' ')|title }}:</strong> {{ v }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ol>
+    <p class="muted small">This history is cryptographically linked, block by block, on an immutable ledger — it cannot be silently altered after the fact.</p>
+  {% else %}
+    <p>No record found for this batch ID.</p>
+  {% endif %}
+</section>
+
+{% endblock %}
